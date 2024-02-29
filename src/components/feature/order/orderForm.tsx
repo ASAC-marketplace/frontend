@@ -92,23 +92,6 @@ function OrderForm() {
     } catch (error) {
       console.log(error)
     }
-    // try {
-    //   const paymentParamCreator = new PaymentParamCreator(orders, data, orderName)
-
-    //   const body = paymentParamCreator.createPaymentParam()
-    //   const paymentRes: PaymentResponse = await fetchOrdersPayment(body)
-
-    //   if (paymentRes.errorMessage) {
-    //     return openCheckModal(paymentRes.errorMessage)
-    //   }
-
-    //   // portone 결제 요청
-    //   initializePaymentModule()
-    //   const callback: RequestPayResponseCallback = PortOneCallback(paymentRes)
-    //   requestPayment(paymentParamCreator.createPortOnePaymentParam(), callback)
-    // } catch (error) {
-    //   console.log(error)
-    // }
   }
 
   return (

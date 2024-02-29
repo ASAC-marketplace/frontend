@@ -1,6 +1,6 @@
 import { IOrder } from '@/types/order'
 import { DELIVERY_CHARGE, IPaymentParams, PaymentResponse } from '@/types/payment'
-import { RequestPayParams, RequestPayResponseCallback } from '@/types/portone'
+import { RequestPayParams, RequestPayResponse, RequestPayResponseCallback } from '@/types/portone'
 
 import { OrderFormInterface } from '../schema/order'
 
@@ -41,3 +41,61 @@ export const createPaymentParamFactory = (data: OrderFormInterface, orders: IOrd
     }
   },
 })
+
+PortOneCallback(
+  paymentRes,
+  () => {
+    router.push(
+      `${basePath}/order-complete/${paymentRes.paymentId}?orderName=${name}&memberName=${orders.memberName}&paid_amount=${paid_amount}`,
+    )
+  },
+  (msg: string | undefined, destination: string) => {
+    if (msg) {
+      openCheckModal(msg, () => router.push(`${basePath}`))
+    } else {
+      router.push(`${basePath}`)
+    }
+  }
+)
+
+class PortoneDto {
+  private constructor() {
+  }
+
+  success() {
+    return new PortoneDto()
+  }
+  
+  fail() {
+    return new PortoneDto()
+  }
+}
+
+
+
+// Success Callback
+// Fail Callback
+export const PortOneCallback = (
+  paymentRes: PaymentResponse,
+  postprocess: (result: PortoneDto) => void,
+) => async (portResponse: RequestPayResponse) => {
+  const { status, error_msg, success } = portResponse
+
+  if (error_msg || !success) {
+    return postprocess(PortoneDto.fail('포트원 결제 시 에러 발생', error_msg))
+  }
+
+  if (status !== 'paid') {
+    return postprocess(PortoneDto.fail('결제 완료 상태가 아님', undefined/* error_msg */))
+  }
+
+  const verify_response = await fetchPaymentVerify(
+    encodePaymentVerifyParams(portResponse.imp_uid!, paymentRes.paymentId)
+  )
+  if (verify_response.msg) {
+    return postprocess(PortoneDto.fail('포트원 결제 및 DB 검증 시 실패', verify_response.msg))
+  }
+  
+  return postprocess(PortoneDto.success())
+}
+
