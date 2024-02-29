@@ -75,11 +75,37 @@ class PortoneDto {
 
 // Success Callback
 // Fail Callback
-export const PortOneCallback = (
-  paymentRes: PaymentResponse,
-  postprocess: (result: PortoneDto) => void,
-) => async (portResponse: RequestPayResponse) => {
-  const { status, error_msg, success } = portResponse
+export const PortOneCallback = async ({ status, error_msg, success }: RequestPayResponse) => {
+  if (error_msg || !success) {
+    return postprocess(PortoneDto.fail('포트원 결제 시 에러 발생', error_msg))
+  }
+
+  if (status !== 'paid') {
+    return postprocess(PortoneDto.fail('결제 완료 상태가 아님', undefined/* error_msg */))
+  }
+  
+  return postprocess(PortoneDto.success())
+}
+
+// const verify_response = await fetchPaymentVerify(
+//   encodePaymentVerifyParams(portResponse.imp_uid!, paymentRes.paymentId)
+// )
+// if (verify_response.msg) {
+//   return postprocess(PortoneDto.fail('포트원 결제 및 DB 검증 시 실패', verify_response.msg))
+// }
+
+PortOneCallback(
+  // postprocess
+  ({ success, type, error_msg }) => {
+    if (success) {
+
+    }
+
+  }
+)
+
+
+function response_verification({ status, error_msg, success }) {
 
   if (error_msg || !success) {
     return postprocess(PortoneDto.fail('포트원 결제 시 에러 발생', error_msg))
@@ -88,14 +114,9 @@ export const PortOneCallback = (
   if (status !== 'paid') {
     return postprocess(PortoneDto.fail('결제 완료 상태가 아님', undefined/* error_msg */))
   }
-
-  const verify_response = await fetchPaymentVerify(
-    encodePaymentVerifyParams(portResponse.imp_uid!, paymentRes.paymentId)
-  )
-  if (verify_response.msg) {
-    return postprocess(PortoneDto.fail('포트원 결제 및 DB 검증 시 실패', verify_response.msg))
-  }
-  
-  return postprocess(PortoneDto.success())
 }
 
+()
+  .then(response_verification)
+  .then(payment_verification)
+  .catch(show_modal)
