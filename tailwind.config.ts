@@ -67,7 +67,7 @@ module.exports = {
           BRONZE: '#5B3E38',
           SILVER: '#4D5B66',
           GOLD: '#C1AE7B',
-          PLATINUM: '#BBE8E7',
+          PLATINUM: '#053336',
           DIAMOND: '#146994',
         },
         'brand-primary': {
